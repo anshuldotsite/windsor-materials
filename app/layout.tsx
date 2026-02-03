@@ -10,7 +10,8 @@ const poppins = Poppins({
 
 export const metadata: Metadata = {
   title: "Windsor Materials - Custom Vanities & Premium Materials",
-  description: "Transform your space with handcrafted custom vanities and premium materials. Quality craftsmanship and custom solutions for your home.",
+  description:
+    "Transform your space with handcrafted custom vanities and premium materials. Quality craftsmanship and custom solutions for your home.",
 };
 
 export default function RootLayout({
@@ -20,11 +21,7 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en">
-      <body
-        className={`${poppins.variable} antialiased`}
-      >
-        {children}
-      </body>
+      <body className={`${poppins.variable} antialiased`}>{children}</body>
     </html>
   );
 }
