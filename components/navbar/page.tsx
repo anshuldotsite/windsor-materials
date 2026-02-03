@@ -87,13 +87,6 @@ export default function Navbar() {
               Collections
             </Link>
             <Link
-              href="/products"
-              className="text-[#243b64] text-lg font-medium"
-              onClick={() => setIsMenuOpen(false)}
-            >
-              Products
-            </Link>
-            <Link
               href="/custom-orders"
               className="text-[#243b64] text-lg font-medium"
               onClick={() => setIsMenuOpen(false)}
