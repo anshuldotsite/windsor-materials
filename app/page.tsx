@@ -4,7 +4,7 @@ import FeaturedCollections from "@/components/featured-collections/page";
 import ReviewsMarquee from "@/components/reviews/page";
 import Footer from "@/components/footer/page";
 import Statistics from "@/components/statistics/page";
-import Gallery from "@/components/gallery/page";
+// import Gallery from "@/components/gallery/page";
 
 export default function Home() {
   return (
@@ -15,7 +15,7 @@ export default function Home() {
         <Statistics />
         <ReviewsMarquee />
         <FeaturedCollections />
-        <Gallery />
+        {/* <Gallery /> */}
       </main>
       <Footer />
     </div>
