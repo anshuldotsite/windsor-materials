@@ -1,8 +1,10 @@
 import Link from "next/link";
 import { getProductBySlug } from "@/lib/data/products";
+import { getCollectionBySlug } from "@/lib/data/collections";
 import Navbar from "@/components/navbar/page";
 import Footer from "@/components/footer/page";
 import ProductPageClient from "@/components/product/ProductPageClient";
+import Breadcrumb from "@/components/ui/Breadcrumb";
 
 export default async function ProductPage({
   params,
@@ -33,9 +35,32 @@ export default async function ProductPage({
     );
   }
 
+  // Get collection info for breadcrumb
+  const collection = product.collection_slug
+    ? await getCollectionBySlug(product.collection_slug)
+    : null;
+
+  // Build breadcrumb items
+  const breadcrumbItems = [{ label: "Collections", href: "/collections" }];
+
+  if (collection) {
+    breadcrumbItems.push({
+      label: collection.name,
+      href: `/collections/${collection.slug}`,
+    });
+  }
+
+  breadcrumbItems.push({ label: product.name });
+
   return (
     <div className="min-h-screen bg-white">
       <Navbar />
+
+      {/* Breadcrumb */}
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-28 pb-2">
+        <Breadcrumb items={breadcrumbItems} />
+      </div>
+
       <ProductPageClient
         product={{
           slug: product.slug,

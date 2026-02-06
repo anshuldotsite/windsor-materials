@@ -17,13 +17,13 @@ export default function Footer() {
                 height={40}
                 className="h-10 w-auto"
               />
-              <h3 className="text-xl font-medium">
+              <h3 className="text-md font-semibold">
                 Windsor Materials and Retail Supply
               </h3>
             </div>
             <p className="text-[#64748B] mb-6 max-w-md font-light">
-              Premium custom vanities and materials to transform your space with
-              elegance and quality.
+              Custom kitchen cabinets, quartz countertops, vanities, and closet
+              systems designed for homeowners and builders.
             </p>
           </div>
 

@@ -14,8 +14,8 @@ export default function Hero() {
             <br />
           </h1>
           <p className="text-lg md:text-xl text-white/80 max-w-lg font-light leading-relaxed mb-12 mx-auto">
-            Vanities created with intention and designed to make you feel at
-            home.
+            Custom kitchen cabinets, quartz countertops, vanities, and closet
+            systems designed for homeowners and builders.
           </p>
 
           <div className="flex flex-col sm:flex-row gap-4 items-center justify-center">

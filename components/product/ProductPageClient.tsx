@@ -1,15 +1,45 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import Link from "next/link";
+import Image, { type StaticImageData } from "next/image";
 import InterestModal from "./InterestModal";
+import oneDrawerCabinetImg from "@/app/assets/products/cabinets/1DrawerCabinet.png";
+import twoDrawerCabinetImg from "@/app/assets/products/cabinets/2DrawerCabinet.png";
+import threeDrawerCabinetImg from "@/app/assets/products/cabinets/3DrawerCabinet.png";
+import fullDoorCabinetImg from "@/app/assets/products/cabinets/fulldoorcabinet.png";
+import garbageBinsImg from "@/app/assets/products/cabinets/garbageBins.png";
+import lazySusanImg from "@/app/assets/products/cabinets/lazySusan.jpg";
+import peanutShapeImg from "@/app/assets/products/cabinets/peanutShape.webp";
+import sinkCabinetImg from "@/app/assets/products/cabinets/sinkcabinet.jpg";
+import spiceRackImg from "@/app/assets/products/cabinets/spiceRack.webp";
+import swingTraysImg from "@/app/assets/products/cabinets/swingTrays.webp";
 
 interface ProductSpecs {
   material?: string;
-  dimensions?: string;
+  dimensions?: string | Record<string, unknown>;
   finishes?: string[];
   warranty?: string;
   ideal_for?: string[];
+  image_gallery?: string[];
+  cabinet_types?: {
+    corner_cabinets?: {
+      description?: string;
+      options?: Array<{ name: string; description: string }>;
+    };
+    drawer_cabinets?: {
+      description?: string;
+      options?: Array<{ name: string; description: string }>;
+    };
+    full_door_cabinets?: {
+      description?: string;
+      options?: Array<{ name: string; description: string }>;
+    };
+    sink_base_cabinets?: {
+      description?: string;
+      options?: Array<{ name: string; description: string }>;
+    };
+  };
 }
 
 interface Product {
@@ -27,8 +57,54 @@ interface ProductPageClientProps {
   product: Product;
 }
 
-// Parse dimensions string into structured data
-function parseDimensions(dimensions: string | undefined): {
+const CABINET_GALLERY_DEFAULT = [
+  "app/assets/products/cabinets/1DrawerCabinet.png",
+  "app/assets/products/cabinets/2DrawerCabinet.png",
+  "app/assets/products/cabinets/3DrawerCabinet.png",
+  "app/assets/products/cabinets/fulldoorcabinet.png",
+  "app/assets/products/cabinets/garbageBins.png",
+  "app/assets/products/cabinets/lazySusan.jpg",
+  "app/assets/products/cabinets/peanutShape.webp",
+  "app/assets/products/cabinets/sinkcabinet.jpg",
+  "app/assets/products/cabinets/spiceRack.webp",
+  "app/assets/products/cabinets/swingTrays.webp",
+];
+
+const CABINET_OPTION_IMAGE_MAP: Record<string, string> = {
+  "Lazy Susan": "lazySusan.jpg",
+  "Spice Rack": "spiceRack.webp",
+  "Garbage Bins": "garbageBins.png",
+  "Swing Trays": "swingTrays.webp",
+  "Peanut Shape": "peanutShape.webp",
+  "1 Drawer Cabinet": "1DrawerCabinet.png",
+  "2 Drawer Cabinet": "2DrawerCabinet.png",
+  "3 Drawer Cabinet": "3DrawerCabinet.png",
+  "Single Door": "fulldoorcabinet.png",
+  "Double Door": "fulldoorcabinet.png",
+  "Standard Sink Base": "sinkcabinet.jpg",
+  "Farmhouse Sink Base": "sinkcabinet.jpg",
+  "Corner Sink Base": "sinkcabinet.jpg",
+};
+
+function resolveProductImage(imageUrl: string | null): StaticImageData | null {
+  if (!imageUrl) return null;
+  if (imageUrl.endsWith("1DrawerCabinet.png")) return oneDrawerCabinetImg;
+  if (imageUrl.endsWith("2DrawerCabinet.png")) return twoDrawerCabinetImg;
+  if (imageUrl.endsWith("3DrawerCabinet.png")) return threeDrawerCabinetImg;
+  if (imageUrl.endsWith("fulldoorcabinet.png")) return fullDoorCabinetImg;
+  if (imageUrl.endsWith("garbageBins.png")) return garbageBinsImg;
+  if (imageUrl.endsWith("lazySusan.jpg")) return lazySusanImg;
+  if (imageUrl.endsWith("peanutShape.webp")) return peanutShapeImg;
+  if (imageUrl.endsWith("sinkcabinet.jpg")) return sinkCabinetImg;
+  if (imageUrl.endsWith("spiceRack.webp")) return spiceRackImg;
+  if (imageUrl.endsWith("swingTrays.webp")) return swingTraysImg;
+  return null;
+}
+
+// Parse dimensions string or object into structured data
+function parseDimensions(
+  dimensions: string | Record<string, unknown> | undefined,
+): {
   widths: string[];
   depths: string[];
   heights: string[];
@@ -40,6 +116,64 @@ function parseDimensions(dimensions: string | undefined): {
     depths: [] as string[],
     heights: [] as string[],
   };
+
+  // Handle object format (from JSONB specifications)
+  if (typeof dimensions === "object" && !Array.isArray(dimensions)) {
+    const dims = dimensions as Record<string, string>;
+
+    // Extract widths from object (e.g., base_widths, widths, etc.)
+    if (dims.base_widths || dims.widths) {
+      const widthStr = (dims.base_widths || dims.widths) as string;
+      result.widths = widthStr
+        .split(/[\/,]/)
+        .map((s) => s.trim())
+        .filter((s) => s.length > 0 && /\d/.test(s));
+    }
+
+    // Extract depths from object (e.g., base_depth, depth, etc.)
+    if (dims.base_depth || dims.depth) {
+      const depthStr = (dims.base_depth || dims.depth) as string;
+      // Extract just the number part (e.g., "24″ standard" -> "24″")
+      const depthMatch = depthStr.match(/([\d″.]+)/);
+      if (depthMatch) {
+        result.depths = [depthMatch[1]];
+      } else {
+        result.depths = depthStr
+          .split(/[\/,]/)
+          .map((s) => s.trim())
+          .filter((s) => s.length > 0 && /\d/.test(s));
+      }
+    }
+
+    // Extract heights from object (e.g., base_height, height, etc.)
+    if (dims.base_height || dims.height) {
+      const heightStr = (dims.base_height || dims.height) as string;
+      // Extract just the number part (e.g., "34.5″ standard" -> "34.5″")
+      const heightMatch = heightStr.match(/([\d″.]+)/);
+      if (heightMatch) {
+        result.heights = [heightMatch[1]];
+      } else {
+        result.heights = heightStr
+          .split(/[\/,]/)
+          .map((s) => s.trim())
+          .filter((s) => s.length > 0 && /\d/.test(s));
+      }
+    }
+
+    // Only return if we found at least one dimension
+    if (
+      result.widths.length > 0 ||
+      result.depths.length > 0 ||
+      result.heights.length > 0
+    ) {
+      return result;
+    }
+
+    return null;
+  }
+
+  // Handle string format (original logic)
+  if (typeof dimensions !== "string") return null;
 
   // Match patterns like "12″ / 15″ / 18″ widths" or "12″ width"
   const widthMatch = dimensions.match(/([\d″\s\/,]+)\s*widths?/i);
@@ -69,7 +203,11 @@ function parseDimensions(dimensions: string | undefined): {
   }
 
   // Only return if we found at least one dimension
-  if (result.widths.length > 0 || result.depths.length > 0 || result.heights.length > 0) {
+  if (
+    result.widths.length > 0 ||
+    result.depths.length > 0 ||
+    result.heights.length > 0
+  ) {
     return result;
   }
 
@@ -84,7 +222,7 @@ function DimensionSelect({
   options: string[];
 }) {
   const isSingle = options.length <= 1;
-  
+
   return (
     <div className="bg-gray-50 rounded-lg p-3">
       <p className="text-[10px] font-semibold text-gray-400 uppercase tracking-wider mb-1">
@@ -94,7 +232,9 @@ function DimensionSelect({
         <select
           disabled={isSingle}
           className={`w-full px-3 py-2 border border-gray-200 rounded-md text-sm text-[#1F3A5F] font-mono appearance-none outline-none ${
-            isSingle ? "bg-gray-100 cursor-not-allowed opacity-75" : "bg-white cursor-pointer"
+            isSingle
+              ? "bg-gray-100 cursor-not-allowed opacity-75"
+              : "bg-white cursor-pointer"
           }`}
           defaultValue={options[0]}
         >
@@ -133,26 +273,209 @@ function DimensionSelect({
   );
 }
 
+// Cabinet Type Selector Component
+function CabinetTypeSelector({
+  cabinetTypes,
+  onOptionChange,
+  onTypeChange,
+}: {
+  cabinetTypes: ProductSpecs["cabinet_types"];
+  onOptionChange?: (optionName: string) => void;
+  onTypeChange?: (typeName: string) => void;
+}) {
+  const [selectedType, setSelectedType] = useState<string>("");
+  const [selectedOption, setSelectedOption] = useState<string>("");
+
+  if (!cabinetTypes) return null;
+
+  const cabinetTypeOptions = [
+    { key: "corner_cabinets", label: "Corner Cabinets" },
+    { key: "drawer_cabinets", label: "Drawer Cabinets" },
+    { key: "full_door_cabinets", label: "Full Door Cabinets" },
+    { key: "sink_base_cabinets", label: "Sink Base Cabinets" },
+  ].filter(({ key }) => cabinetTypes[key as keyof typeof cabinetTypes]);
+
+  const selectedTypeData = selectedType
+    ? cabinetTypes[selectedType as keyof typeof cabinetTypes]
+    : null;
+
+  return (
+    <div className="space-y-4">
+      <h4 className="text-[10px] font-semibold text-gray-400 uppercase tracking-widest mb-3">
+        Select Cabinet Type
+      </h4>
+
+      {/* Main Cabinet Type Dropdown */}
+      <div>
+        <label className="block text-xs font-semibold text-gray-400 uppercase tracking-wider mb-2">
+          Cabinet Type *
+        </label>
+        <div className="relative">
+          <select
+            value={selectedType}
+            onChange={(e) => {
+              const next = e.target.value;
+              setSelectedType(next);
+              setSelectedOption(""); // Reset sub-option when type changes
+              if (onTypeChange) onTypeChange(next);
+            }}
+            className="w-full px-4 py-3 border border-gray-200 rounded-lg focus:border-[#1F3A5F] focus:ring-1 focus:ring-[#1F3A5F] outline-none transition-all text-[#1F3A5F] appearance-none cursor-pointer bg-white"
+          >
+            <option value="">Choose a cabinet type</option>
+            {cabinetTypeOptions.map(({ key, label }) => (
+              <option key={key} value={key}>
+                {label}
+              </option>
+            ))}
+          </select>
+          <div className="absolute right-4 top-1/2 -translate-y-1/2 pointer-events-none text-gray-400">
+            <svg
+              width="12"
+              height="8"
+              viewBox="0 0 12 8"
+              fill="none"
+              xmlns="http://www.w3.org/2000/svg"
+            >
+              <path
+                d="M1 1.5L6 6.5L11 1.5"
+                stroke="currentColor"
+                strokeWidth="1.5"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+              />
+            </svg>
+          </div>
+        </div>
+      </div>
+
+      {/* Sub-option Dropdown (shown when type is selected) */}
+      {selectedTypeData &&
+        selectedTypeData.options &&
+        selectedTypeData.options.length > 0 && (
+          <div>
+            <label className="block text-xs font-semibold text-gray-400 uppercase tracking-wider mb-2">
+              {selectedTypeData.description || "Select Option"} *
+            </label>
+            <div className="relative">
+              <select
+                value={selectedOption}
+                onChange={(e) => {
+                  const next = e.target.value;
+                  setSelectedOption(next);
+                  if (onOptionChange) onOptionChange(next);
+                }}
+                className="w-full px-4 py-3 border border-gray-200 rounded-lg focus:border-[#1F3A5F] focus:ring-1 focus:ring-[#1F3A5F] outline-none transition-all text-[#1F3A5F] appearance-none cursor-pointer bg-white"
+              >
+                <option value="">Choose an option</option>
+                {selectedTypeData.options.map((option, index) => (
+                  <option key={index} value={option.name}>
+                    {option.name}
+                  </option>
+                ))}
+              </select>
+              <div className="absolute right-4 top-1/2 -translate-y-1/2 pointer-events-none text-gray-400">
+                <svg
+                  width="12"
+                  height="8"
+                  viewBox="0 0 12 8"
+                  fill="none"
+                  xmlns="http://www.w3.org/2000/svg"
+                >
+                  <path
+                    d="M1 1.5L6 6.5L11 1.5"
+                    stroke="currentColor"
+                    strokeWidth="1.5"
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                  />
+                </svg>
+              </div>
+            </div>
+            {selectedOption && (
+              <p className="mt-2 text-sm text-gray-600 font-light">
+                {
+                  selectedTypeData.options.find(
+                    (opt) => opt.name === selectedOption,
+                  )?.description
+                }
+              </p>
+            )}
+          </div>
+        )}
+    </div>
+  );
+}
+
 export default function ProductPageClient({ product }: ProductPageClientProps) {
   const [isModalOpen, setIsModalOpen] = useState(false);
+  const [activeImageIndex, setActiveImageIndex] = useState(0);
+  const [isCarouselPaused, setIsCarouselPaused] = useState(false);
 
   const specs = (product.specifications ?? {}) as ProductSpecs;
   const parsedDimensions = parseDimensions(specs.dimensions);
 
+  const galleryUrls = useMemo(() => {
+    if (product.slug === "cabinets") {
+      const gallery = Array.isArray(specs.image_gallery)
+        ? specs.image_gallery
+        : CABINET_GALLERY_DEFAULT;
+      return gallery.length > 0 ? gallery : CABINET_GALLERY_DEFAULT;
+    }
+    return product.image_url ? [product.image_url] : [];
+  }, [product.image_url, product.slug, specs.image_gallery]);
+
+  const galleryImages = useMemo(() => {
+    return galleryUrls
+      .map((url) => ({ url, img: resolveProductImage(url) }))
+      .filter((entry) => entry.url);
+  }, [galleryUrls]);
+
+  useEffect(() => {
+    if (galleryImages.length <= 1 || isCarouselPaused) return;
+    const interval = setInterval(() => {
+      setActiveImageIndex((prev) => (prev + 1) % galleryImages.length);
+    }, 3500);
+    return () => clearInterval(interval);
+  }, [galleryImages.length, isCarouselPaused]);
+
+  useEffect(() => {
+    if (activeImageIndex >= galleryImages.length) {
+      setActiveImageIndex(0);
+    }
+  }, [activeImageIndex, galleryImages.length]);
+
   return (
     <>
       {/* Product Details */}
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-32 pb-16">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-8 pb-16">
         <div className="grid grid-cols-1 md:grid-cols-2 gap-16 lg:gap-24">
           {/* Product Image */}
           <div className="flex items-start justify-center">
             <div className="w-full aspect-square bg-gray-50 rounded-2xl overflow-hidden shadow-sm">
-              {product.image_url ? (
-                <img
-                  src={product.image_url}
-                  alt={product.name}
-                  className="w-full h-full object-cover"
-                />
+              {galleryImages.length > 0 ? (
+                (() => {
+                  const current =
+                    galleryImages[activeImageIndex] ?? galleryImages[0];
+                  if (current?.img) {
+                    return (
+                      <Image
+                        src={current.img}
+                        alt={product.name}
+                        width={900}
+                        height={900}
+                        className="w-full h-full object-cover"
+                        priority
+                      />
+                    );
+                  }
+                  return current?.url ? (
+                    <img
+                      src={current.url}
+                      alt={product.name}
+                      className="w-full h-full object-cover"
+                    />
+                  ) : null;
+                })()
               ) : (
                 <div className="w-full h-full bg-gray-50 flex items-center justify-center">
                   <div className="text-center text-gray-400">
@@ -204,6 +527,25 @@ export default function ProductPageClient({ product }: ProductPageClientProps) {
                 </p>
               </div>
 
+              {/* Cabinet Type Selector (for cabinets product) */}
+              {product.slug === "cabinets" && specs.cabinet_types && (
+                <CabinetTypeSelector
+                  cabinetTypes={specs.cabinet_types}
+                  onTypeChange={() => {
+                    setIsCarouselPaused(true);
+                  }}
+                  onOptionChange={(optionName) => {
+                    setIsCarouselPaused(true);
+                    const filename = CABINET_OPTION_IMAGE_MAP[optionName];
+                    if (!filename) return;
+                    const idx = galleryImages.findIndex((entry) =>
+                      entry.url.endsWith(filename),
+                    );
+                    if (idx >= 0) setActiveImageIndex(idx);
+                  }}
+                />
+              )}
+
               {/* Dimensions - Column Layout with Dropdowns */}
               {parsedDimensions ? (
                 <div>
@@ -212,25 +554,25 @@ export default function ProductPageClient({ product }: ProductPageClientProps) {
                   </h4>
                   <div className="grid grid-cols-3 gap-4">
                     {/* Width */}
-                    <DimensionSelect 
-                      label="Width" 
-                      options={parsedDimensions.widths} 
+                    <DimensionSelect
+                      label="Width"
+                      options={parsedDimensions.widths}
                     />
 
                     {/* Depth */}
-                    <DimensionSelect 
-                      label="Depth" 
-                      options={parsedDimensions.depths} 
+                    <DimensionSelect
+                      label="Depth"
+                      options={parsedDimensions.depths}
                     />
 
                     {/* Height */}
-                    <DimensionSelect 
-                      label="Height" 
-                      options={parsedDimensions.heights} 
+                    <DimensionSelect
+                      label="Height"
+                      options={parsedDimensions.heights}
                     />
                   </div>
                 </div>
-              ) : specs.dimensions ? (
+              ) : specs.dimensions && typeof specs.dimensions === "string" ? (
                 <div className="flex flex-col gap-1">
                   <h4 className="text-[10px] font-semibold text-gray-400 uppercase tracking-widest">
                     Dimensions

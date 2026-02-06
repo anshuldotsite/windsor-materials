@@ -4,6 +4,7 @@ import { getCollectionBySlug } from "@/lib/data/collections";
 import { listProductsByCollectionSlug } from "@/lib/data/products";
 import Navbar from "@/components/navbar/page";
 import Footer from "@/components/footer/page";
+import Breadcrumb from "@/components/ui/Breadcrumb";
 
 import kitchenCabinetImg from "@/app/assets/collections/kitchen-cabinets.png";
 import quartzCountertopsImg from "@/app/assets/collections/quartz-countertops.png";
@@ -40,7 +41,6 @@ export default async function CollectionPage({
 }) {
   const { slug } = await params;
   const collection = await getCollectionBySlug(slug);
-  const accentColor = "#E3A008";
   const products = await listProductsByCollectionSlug(slug);
 
   if (!collection) {
@@ -69,10 +69,10 @@ export default async function CollectionPage({
       <Navbar />
 
       {/* Hero Section */}
-      <div className="relative h-150 overflow-hidden">
+      <div className="relative h-[500px] overflow-hidden mt-20">
         {(() => {
           const img = resolveCollectionImage(collection.image_url);
-          if (!img) return <div className="w-full h-full bg-gray-50" />;
+          if (!img) return <div className="w-full h-full bg-gray-100" />;
           return (
             <Image
               src={img}
@@ -97,7 +97,17 @@ export default async function CollectionPage({
       </div>
 
       {/* Products in Collection */}
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-32">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16">
+        {/* Breadcrumb */}
+        <div className="mb-12">
+          <Breadcrumb
+            items={[
+              { label: "Collections", href: "/collections" },
+              { label: collection.name },
+            ]}
+          />
+        </div>
+
         <h2 className="text-3xl md:text-4xl font-light text-[#1F3A5F] mb-16 text-center">
           Products
         </h2>
@@ -141,7 +151,7 @@ export default async function CollectionPage({
         )}
 
         {/* CTA Section */}
-        <div className="bg-gray-50 rounded-3xl p-12 md:p-24 mt-32 text-center">
+        <div className="bg-gray-50 rounded-3xl p-12 md:p-24 mt-20 text-center">
           <div className="max-w-3xl mx-auto">
             <h2 className="text-3xl md:text-4xl font-light text-[#1F3A5F] mb-6">
               Can't find exactly what you're looking for?

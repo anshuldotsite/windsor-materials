@@ -25,10 +25,9 @@ export default function Navbar() {
                   priority
                 />
                 <div className="flex flex-col leading-tight">
-                  <span className="text-lg font-semibold text-[#243b64]">
+                  <span className="text-md font-semibold text-[#243b64]">
                     Windsor Materials and Retail Supply
                   </span>
-                  {/* <span className="text-sm text-gray-500">Building Supply</span> */}
                 </div>
               </Link>
             </div>

@@ -31,8 +31,8 @@ interface ParsedDimensions {
   heights: string[];
 }
 
-// Parse dimensions string into structured data
-function parseDimensions(dimensions: string | undefined): ParsedDimensions | null {
+// Parse dimensions string or object into structured data
+function parseDimensions(dimensions: string | Record<string, unknown> | undefined): ParsedDimensions | null {
   if (!dimensions) return null;
 
   const result: ParsedDimensions = {
@@ -40,6 +40,60 @@ function parseDimensions(dimensions: string | undefined): ParsedDimensions | nul
     depths: [],
     heights: [],
   };
+
+  // Handle object format (from JSONB specifications)
+  if (typeof dimensions === 'object' && !Array.isArray(dimensions)) {
+    const dims = dimensions as Record<string, string>;
+    
+    // Extract widths from object (e.g., base_widths, widths, etc.)
+    if (dims.base_widths || dims.widths) {
+      const widthStr = (dims.base_widths || dims.widths) as string;
+      result.widths = widthStr
+        .split(/[\/,]/)
+        .map((s) => s.trim())
+        .filter((s) => s.length > 0 && /\d/.test(s));
+    }
+    
+    // Extract depths from object (e.g., base_depth, depth, etc.)
+    if (dims.base_depth || dims.depth) {
+      const depthStr = (dims.base_depth || dims.depth) as string;
+      // Extract just the number part (e.g., "24″ standard" -> "24″")
+      const depthMatch = depthStr.match(/([\d″.]+)/);
+      if (depthMatch) {
+        result.depths = [depthMatch[1]];
+      } else {
+        result.depths = depthStr
+          .split(/[\/,]/)
+          .map((s) => s.trim())
+          .filter((s) => s.length > 0 && /\d/.test(s));
+      }
+    }
+    
+    // Extract heights from object (e.g., base_height, height, etc.)
+    if (dims.base_height || dims.height) {
+      const heightStr = (dims.base_height || dims.height) as string;
+      // Extract just the number part (e.g., "34.5″ standard" -> "34.5″")
+      const heightMatch = heightStr.match(/([\d″.]+)/);
+      if (heightMatch) {
+        result.heights = [heightMatch[1]];
+      } else {
+        result.heights = heightStr
+          .split(/[\/,]/)
+          .map((s) => s.trim())
+          .filter((s) => s.length > 0 && /\d/.test(s));
+      }
+    }
+    
+    // Only return if we found at least one dimension
+    if (result.widths.length > 0 || result.depths.length > 0 || result.heights.length > 0) {
+      return result;
+    }
+    
+    return null;
+  }
+
+  // Handle string format (original logic)
+  if (typeof dimensions !== 'string') return null;
 
   // Match patterns like "12″ / 15″ / 18″ widths" or "12″ width"
   const widthMatch = dimensions.match(/([\d″\s\/,]+)\s*widths?/i);

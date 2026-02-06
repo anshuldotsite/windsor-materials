@@ -43,7 +43,7 @@ export default async function FeaturedCollections() {
             >
               {/* Image */}
               <div
-                className={`${index % 2 === 1 ? "lg:col-start-2" : ""} h-125 bg-gray-50 overflow-hidden rounded-3xl shadow-sm`}
+                className={`${index % 2 === 1 ? "lg:col-start-2" : ""} h-[500px] bg-gray-50 overflow-hidden rounded-3xl shadow-sm`}
               >
                 {(() => {
                   const img = resolveCollectionImage(collection.image_url);

@@ -55,7 +55,7 @@ export default async function Collections() {
               href={`/collections/${collection.slug}`}
               className="group flex flex-col"
             >
-              <div className="flex overflow-hidden aspect-4/5 bg-gray-50 mb-8 rounded-3xl shadow-sm hover:shadow-md transition-all duration-500">
+              <div className="flex overflow-hidden aspect-[4/5] bg-gray-50 mb-8 rounded-3xl shadow-sm hover:shadow-md transition-all duration-500">
                 <div className="flex w-full h-full bg-gray-100 transition-transform duration-1000 ease-out group-hover:scale-105">
                   {(() => {
                     const img = resolveCollectionImage(collection.image_url);
