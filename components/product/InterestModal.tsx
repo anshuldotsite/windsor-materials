@@ -5,7 +5,7 @@ import ImageUpload from "@/components/ui/ImageUpload";
 
 interface ProductSpecs {
   material?: string;
-  dimensions?: string;
+  dimensions?: string | Record<string, unknown>;
   finishes?: string[];
   warranty?: string;
   ideal_for?: string[];
@@ -391,7 +391,29 @@ export default function InterestModal({
       } else if (hasFeatureSizes && formData.size) {
         sizeInfo = formData.size;
       } else {
-        sizeInfo = product.specifications?.dimensions || "N/A";
+        const dimensions = product.specifications?.dimensions;
+        if (typeof dimensions === "string") {
+          sizeInfo = dimensions;
+        } else if (dimensions && typeof dimensions === "object") {
+          const parsed = parseDimensions(dimensions);
+          if (parsed) {
+            const parts = [] as string[];
+            if (parsed.widths.length > 0) {
+              parts.push(`Width: ${parsed.widths.join(" / ")}`);
+            }
+            if (parsed.depths.length > 0) {
+              parts.push(`Depth: ${parsed.depths.join(" / ")}`);
+            }
+            if (parsed.heights.length > 0) {
+              parts.push(`Height: ${parsed.heights.join(" / ")}`);
+            }
+            sizeInfo = parts.length > 0 ? parts.join(", ") : "N/A";
+          } else {
+            sizeInfo = "N/A";
+          }
+        } else {
+          sizeInfo = "N/A";
+        }
       }
 
       const response = await fetch("/api/send-contact", {
