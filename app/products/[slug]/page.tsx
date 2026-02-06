@@ -50,7 +50,7 @@ export default async function ProductPage({
     });
   }
 
-  breadcrumbItems.push({ label: product.name });
+  // breadcrumbItems.push({ label: product.name });
 
   return (
     <div className="min-h-screen bg-white">
