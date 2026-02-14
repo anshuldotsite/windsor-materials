@@ -14,6 +14,11 @@ import peanutShapeImg from "@/app/assets/products/cabinets/peanutShape.webp";
 import sinkCabinetImg from "@/app/assets/products/cabinets/sinkcabinet.jpg";
 import spiceRackImg from "@/app/assets/products/cabinets/spiceRack.webp";
 import swingTraysImg from "@/app/assets/products/cabinets/swingTrays.webp";
+import quartzEssentialOne from "@/app/assets/products/quartz/essential-series/one.jpg";
+import quartzEssentialTwo from "@/app/assets/products/quartz/essential-series/2.webp";
+import quartzEssentialThree from "@/app/assets/products/quartz/essential-series/3.webp";
+import quartzEssentialFour from "@/app/assets/products/quartz/essential-series/4.webp";
+import quartzEssentialFive from "@/app/assets/products/quartz/essential-series/5.webp";
 
 interface ProductSpecs {
   material?: string;
@@ -98,6 +103,13 @@ function resolveProductImage(imageUrl: string | null): StaticImageData | null {
   if (imageUrl.endsWith("sinkcabinet.jpg")) return sinkCabinetImg;
   if (imageUrl.endsWith("spiceRack.webp")) return spiceRackImg;
   if (imageUrl.endsWith("swingTrays.webp")) return swingTraysImg;
+  // Quartz essential series images
+  if (imageUrl.endsWith("one.jpg") || imageUrl.endsWith("one.JPG"))
+    return quartzEssentialOne;
+  if (imageUrl.endsWith("2.webp")) return quartzEssentialTwo;
+  if (imageUrl.endsWith("3.webp")) return quartzEssentialThree;
+  if (imageUrl.endsWith("4.webp")) return quartzEssentialFour;
+  if (imageUrl.endsWith("5.webp")) return quartzEssentialFive;
   return null;
 }
 

@@ -219,7 +219,14 @@ VALUES (
     'material', '93% natural quartz, 7% polymer resins',
     'thickness', '2cm or 3cm',
     'finish', 'Polished',
-    'warranty', '10 years'
+    'warranty', '10 years',
+    'image_gallery', ARRAY[
+      'app/assets/products/quartz/essential-series/one.jpg',
+      'app/assets/products/quartz/essential-series/2.webp',
+      'app/assets/products/quartz/essential-series/3.webp',
+      'app/assets/products/quartz/essential-series/4.webp',
+      'app/assets/products/quartz/essential-series/5.webp'
+    ]
   ),
   NULL,
   'quartz-countertops'
